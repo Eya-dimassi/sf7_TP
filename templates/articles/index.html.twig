@@ -4,6 +4,18 @@
 
 {% block body %}
 <h1>Liste des Articles</h1>
+{{ form_start(form) }}
+<div class="form-row align-items-end" >
+<div class="col">
+ {{ form_row(form.nom) }}
+</div>
+ <div class="col">
+ <div class="form-group">
+ <button type="submit" class="btn btn-success">Rechercher</button>
+ </div>
+</div>
+</div>
+{{ form_end(form) }}
 
 {% if articles %}
     <table class="table table-striped" id="articles">

@@ -15,6 +15,15 @@
         <li class="nav-item">
           <a href="{{ path('new_category') }}" class="nav-link">Ajouter catégorie</a>
         </li>
+        <li class="nav-item">
+    <a class="nav-link {% if app.request.get('_route') == 'article_par_cat' %}active text-white bg-primary{% endif %}" 
+       href="{{ path('article_par_cat') }}">
+       Recherche par Catégorie
+    </a>
+</li>
+<li class="nav-item">
+<a href="{{path('article_par_prix')}}" class="nav-link">Recherche par prix</a>
+</li>
       </ul>
     </div>
   </div>

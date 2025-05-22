@@ -14,16 +14,38 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use App\Entity\Category;
 use App\Form\CategoryType;
 use App\Form\ArticleType;
+use App\Entity\PropertySearch;
+use App\Form\PropertySearchType;
+use App\Entity\CategorySearch;
+use App\Form\CategorySearchType;
+use App\Entity\PriceSearch;
+use App\Form\PriceSearchType;
 
 
 class IndexController extends AbstractController
 {
     #[Route("/", name: "homepage")]
-    public function home(ArticleRepository $articleRepository): Response
+    public function home(ArticleRepository $articleRepository, Request $request): Response
     {
-        $articles = $articleRepository->findAll();
+        $search = new PropertySearch();
+        $form = $this->createForm(PropertySearchType::class, $search);
+        $form->handleRequest($request);
+    
+        $articles = [];
+    
+        if ($form->isSubmitted() && $form->isValid()) {
+            $nom = $search->getNom();
+    
+            if ($nom !== null && $nom !== '') {
+                $articles = $articleRepository->findBy(['nom' => $nom]);
+            } else {
+                $articles = $articleRepository->findAll();
+            }
+        }
+    
         return $this->render('articles/index.html.twig', [
-            'articles' => $articles,
+            'form' => $form->createView(),
+            'articles' => $articles
         ]);
     }
 
@@ -126,14 +148,66 @@ public function edit(Request $request, $id, ArticleRepository $articleRepository
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($category);
             $entityManager->flush();
+            return $this->redirectToRoute('homepage');
         }
     
         return $this->render('articles/newCategory.html.twig', [
             'form' => $form->createView()
         ]);
     }
+    #[Route('/art_cat/', name: 'article_par_cat', methods: ['GET', 'POST'])]
+public function articlesParCategorie(ArticleRepository $articleRepository,Request $request): Response
+{
+    $categorySearch = new CategorySearch();
+    $form = $this->createForm(CategorySearchType::class, $categorySearch);
+    $form->handleRequest($request);
+
+    $articles = [];
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $category = $categorySearch->getCategory();
+
+        if ($category !== null) {
+            $articles = $category->getArticles();
+        } else {
+            $articles = $articleRepository->findAll();
+
+        }
+       
+    }
+
+    return $this->render('articles/articlesParCategorie.html.twig', [
+        'form' => $form->createView(),
+        'articles' => $articles,
+    ]);
+    
+}
+#[Route('/art_prix', name: 'article_par_prix', methods: ['GET'])]
+     public function articlesParPrix(Request $request, ArticleRepository $articleRepository): Response
+{
+    $priceSearch = new PriceSearch();
+    $form = $this->createForm(PriceSearchType::class, $priceSearch);
+    $form->handleRequest($request);
+
+    $articles = [];
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $minPrice = $priceSearch->getMinPrice();
+        $maxPrice = $priceSearch->getMaxPrice();
+
+        $articles = $articleRepository->findByPriceRange($minPrice, $maxPrice);
+        
+    }
+
+
+    return $this->render('articles/articlesParPrix.html.twig', [
+        'form' => $form->createView(),
+        'articles' => $articles
+    ]);
+}
 
 }
+
 
 
 

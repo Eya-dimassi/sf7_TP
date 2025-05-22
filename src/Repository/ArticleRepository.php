@@ -15,6 +15,26 @@ class ArticleRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Article::class);
     }
+    public function findByPriceRange(?int $minValue, ?int $maxValue): array
+{
+    $qb = $this->createQueryBuilder('a');
+
+    if ($minValue !== null) {
+        $qb->andWhere('a.prix >= :minVal')
+           ->setParameter('minVal', $minValue);
+    }
+
+    if ($maxValue !== null) {
+        $qb->andWhere('a.prix <= :maxVal')
+           ->setParameter('maxVal', $maxValue);
+    }
+
+    return $qb->orderBy('a.id', 'ASC')
+              ->setMaxResults(10)
+              ->getQuery()
+              ->getResult();
+}
+
 
     //    /**
     //     * @return Article[] Returns an array of Article objects
